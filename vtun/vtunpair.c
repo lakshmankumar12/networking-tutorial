@@ -27,8 +27,9 @@ static char doc[] =
 static char args_doc[] = "tun1 tun2";
 
 static struct argp_option options[] = {
-    {"persistent",  'p', 0,      0,  "Create persistent tunnels" },
+    {"persistent",  'p', 0,         0,  "Create persistent tunnels" },
     {"pidfile",     'P', "pidfile", 0,  "pid file to create"},
+    {"daemon",      'd', 0,         0,  "run as daemon"},
     { 0 }
 };
 
@@ -37,6 +38,7 @@ struct arguments
     const char *tun1;
     const char *tun2;
     int         persistent;
+    int         daemon;
     const char *pidfile;
 };
 
@@ -51,6 +53,9 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
             break;
         case 'P':
             arguments->pidfile = arg;
+            break;
+        case 'd':
+            arguments->daemon = 1;
             break;
         case ARGP_KEY_ARG:
             if (state->arg_num >= 2) {
@@ -115,32 +120,46 @@ static int create_tunnel(struct arguments *args, const char *tun)
     return fd;
 }
 
+static void create_pid_file(struct arguments *args)
+{
+    if (args->pidfile) {
+        FILE *f = fopen(args->pidfile, "w");
+        if (!f) {
+            fprintf(stderr, "Unable to open pidfile:%s\n", args->pidfile);
+            exit(1);
+        }
+        int err = fprintf(f,"%d",getpid());
+        if (err <= 0) {
+            fprintf(stderr, "Unable to write to pidfile:%s\n", args->pidfile);
+            exit(1);
+        }
+        fclose(f);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     struct arguments arguments;
 
     /* Default values. */
     arguments.persistent = 0;
+    arguments.daemon = 0;
     arguments.pidfile = NULL;
 
     argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
-    if (arguments.pidfile) {
-        FILE *f = fopen(arguments.pidfile, "w");
-        if (!f) {
-            fprintf(stderr, "Unable to open pidfile:%s\n", arguments.pidfile);
-            exit(1);
-        }
-        int err = fprintf(f,"%d",getpid());
-        if (err <= 0) {
-            fprintf(stderr, "Unable to write to pidfile:%s\n", arguments.pidfile);
-            exit(1);
-        }
-        fclose(f);
-    }
+    /* attempting writing pid file before becoming daemon
+     * to warn any errors */
+    create_pid_file(&arguments);
 
     int fd1 = create_tunnel(&arguments, arguments.tun1);
     int fd2 = create_tunnel(&arguments, arguments.tun2);
+
+    if (arguments.daemon) {
+        daemon(0, 0);
+        /* update pid again */
+        create_pid_file(&arguments);
+    }
 
     int fm = max(fd1, fd2) + 1;
 
