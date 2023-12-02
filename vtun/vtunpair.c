@@ -6,6 +6,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <linux/if.h>
 #include <linux/if_tun.h>
@@ -26,6 +28,7 @@ static char args_doc[] = "tun1 tun2";
 
 static struct argp_option options[] = {
     {"persistent",  'p', 0,      0,  "Create persistent tunnels" },
+    {"pidfile",     'P', "pidfile", 0,  "pid file to create"},
     { 0 }
 };
 
@@ -34,6 +37,7 @@ struct arguments
     const char *tun1;
     const char *tun2;
     int         persistent;
+    const char *pidfile;
 };
 
 static error_t parse_opt (int key, char *arg, struct argp_state *state)
@@ -44,6 +48,9 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
     {
         case 'p':
             arguments->persistent = 1;
+            break;
+        case 'P':
+            arguments->pidfile = arg;
             break;
         case ARGP_KEY_ARG:
             if (state->arg_num >= 2) {
@@ -114,8 +121,23 @@ int main(int argc, char *argv[])
 
     /* Default values. */
     arguments.persistent = 0;
+    arguments.pidfile = NULL;
 
     argp_parse (&argp, argc, argv, 0, 0, &arguments);
+
+    if (arguments.pidfile) {
+        FILE *f = fopen(arguments.pidfile, "w");
+        if (!f) {
+            fprintf(stderr, "Unable to open pidfile:%s\n", arguments.pidfile);
+            exit(1);
+        }
+        int err = fprintf(f,"%d",getpid());
+        if (err <= 0) {
+            fprintf(stderr, "Unable to write to pidfile:%s\n", arguments.pidfile);
+            exit(1);
+        }
+        fclose(f);
+    }
 
     int fd1 = create_tunnel(&arguments, arguments.tun1);
     int fd2 = create_tunnel(&arguments, arguments.tun2);
