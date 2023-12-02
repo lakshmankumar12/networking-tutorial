@@ -9,89 +9,135 @@
 
 #include <linux/if.h>
 #include <linux/if_tun.h>
+#include <argp.h>
 
 #define max(a,b) ((a)>(b) ? (a):(b))
 
-int main(int argc, char *argv[])
-{
-    int err;
-    if(argc < 3) {
-        printf("Usage: tunpair name1 name2\n");
-        exit(1);
-    }
-    char *clonedev = "/dev/net/tun";
-    int firstfd;
+const char *argp_program_version =
+  "vtunpair 1.0";
+const char *argp_program_bug_address =
+  "lakshmankumar@gmail.com";
 
-    /* open the clone device */
-    if( (firstfd = open(clonedev, O_RDWR)) < 0 ) {
-        perror("Could't open clonedev");
-        return firstfd;
+static char doc[] =
+  "vtunpair -- creates a pair of tun interfaces, that echo each other pkts\n"
+  "            Supply the names of the 2 tun interfaces to create\n";
+
+static char args_doc[] = "tun1 tun2";
+
+static struct argp_option options[] = {
+    {"persistent",  'p', 0,      0,  "Create persistent tunnels" },
+    { 0 }
+};
+
+struct arguments
+{
+    const char *tun1;
+    const char *tun2;
+    int         persistent;
+};
+
+static error_t parse_opt (int key, char *arg, struct argp_state *state)
+{
+    struct arguments *arguments = state->input;
+
+    switch (key)
+    {
+        case 'p':
+            arguments->persistent = 1;
+            break;
+        case ARGP_KEY_ARG:
+            if (state->arg_num >= 2) {
+                fprintf(stderr, "Too many args\n");
+                argp_usage (state);
+            } else if (state->arg_num == 0) {
+                arguments->tun1 = arg;
+            } else { /* state->arg_num == 1 */
+                arguments->tun2 = arg;
+            }
+            break;
+        case ARGP_KEY_END:
+            if (state->arg_num < 2) {
+                fprintf(stderr, "Too few args\n");
+                argp_usage (state);
+            }
+            break;
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static struct argp argp = { options, parse_opt, args_doc, doc };
+
+static int create_tunnel(struct arguments *args, const char *tun)
+{
+    char *clonedev = "/dev/net/tun";
+
+    int fd = open(clonedev, O_RDWR);
+    if( fd < 0 ) {
+        fprintf(stderr, "cloning %s failed while attempting tun:%s, err:%d/%s\n",
+                        clonedev, tun, errno, strerror(errno));
+        exit(1);
     }
 
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
-    strncpy(ifr.ifr_name, argv[1], IFNAMSIZ);
+    strncpy(ifr.ifr_name, tun, IFNAMSIZ);
 
-    /* try to create the device */
-    if( (err = ioctl(firstfd, TUNSETIFF, (void *) &ifr)) < 0 ) {
-        perror("ioctl failed for first tun");
-        return err;
+    int err = ioctl(fd, TUNSETIFF, (void *) &ifr);
+    if( err < 0 ) {
+        fprintf(stderr, "tun:%s ioctl-TUNSETIFF failed, err:%d/%s\n",
+                        tun, errno, strerror(errno));
+        exit (1);
     }
 
-    if(ioctl(firstfd, TUNSETPERSIST, 1) < 0){
-        perror("disabling TUNSETPERSIST");
-        return -1;
+    err = ioctl(fd, TUNSETPERSIST, args->persistent);
+    if( err < 0 ) {
+        fprintf(stderr, "tun:%s TUNSETPERSIST-%d failed, err:%d/%s\n",
+                        tun, args->persistent, errno, strerror(errno));
+        exit(1);
     }
-    if (ioctl(firstfd, TUNSETNOCSUM, 1) < 0) {
-        perror("disabling CSUM");
-        return -1;
-    }
-
-    /* open the clone device */
-    int secondfd;
-    if( (secondfd = open(clonedev, O_RDWR)) < 0 ) {
-        perror("Could't open clonedev");
-        return secondfd;
+    err = ioctl(fd, TUNSETNOCSUM, 1);
+    if ( err < 0 ) {
+        fprintf(stderr, "tun:%s TUNSETNOCSUM failed, err:%d/%s\n",
+                        tun, errno, strerror(errno));
+        exit(1);
     }
 
-    memset(&ifr, 0, sizeof(ifr));
-    ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
-    strncpy(ifr.ifr_name, argv[2], IFNAMSIZ);
+    return fd;
+}
 
-    /* try to create the device */
-    if( (err = ioctl(secondfd, TUNSETIFF, (void *) &ifr)) < 0 ) {
-        perror("ioctl failed for second tun");
-        return err;
-    }
+int main(int argc, char *argv[])
+{
+    struct arguments arguments;
 
-    if(ioctl(secondfd, TUNSETPERSIST, 1) < 0){
-        perror("disabling TUNSETPERSIST");
-        return -1;
-    }
-    if (ioctl(secondfd, TUNSETNOCSUM, 1) < 0) {
-        perror("disabling CSUM");
-        return -1;
-    }
+    /* Default values. */
+    arguments.persistent = 0;
 
-    int fm = max(firstfd, secondfd) + 1;
+    argp_parse (&argp, argc, argv, 0, 0, &arguments);
+
+    int fd1 = create_tunnel(&arguments, arguments.tun1);
+    int fd2 = create_tunnel(&arguments, arguments.tun2);
+
+    int fm = max(fd1, fd2) + 1;
 
     while(1){
         fd_set fds;
         char buf[1600];
         FD_ZERO(&fds);
-        FD_SET(firstfd, &fds);
-        FD_SET(secondfd, &fds);
+        FD_SET(fd1, &fds);
+        FD_SET(fd2, &fds);
 
         select(fm, &fds, NULL, NULL, NULL);
 
-        if(FD_ISSET(firstfd, &fds) ) {
-            int l = read(firstfd,buf,sizeof(buf));
-            write(secondfd,buf,l);
+        if(FD_ISSET(fd1, &fds) ) {
+            int l = read(fd1,buf,sizeof(buf));
+            write(fd2,buf,l);
         }
-        if( FD_ISSET(secondfd, &fds) ) {
-            int l = read(secondfd,buf,sizeof(buf));
-            write(firstfd,buf,l);
+        if( FD_ISSET(fd2, &fds) ) {
+            int l = read(fd2,buf,sizeof(buf));
+            write(fd1,buf,l);
         }
     }
     return 0;
