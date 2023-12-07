@@ -67,10 +67,12 @@ From here, on your own:
 # Ethernet
 
 * Link Layer
-* Each host has one or more physical device that connects itself to rest of network.
-* By far, ethernet devices are the most common. There are other devices (eg:
-  co-ax, twisted pair) that are point-to-point links. These are found in the
-  ISP to our house/office. But within a branch/house, ethernet is the way to go.
+* Each host has one or more physical device that connects itself to
+  rest of network.
+* By far, ethernet devices are the most common. There are other devices
+  (eg: co-ax, twisted pair) that are point-to-point links. These are
+  found in the ISP to our house/office. But within a branch/house,
+  ethernet is the way to go.
 * Ethernet flavours
     * Twisted pair - RJ45
     * Fibre
@@ -80,7 +82,8 @@ From here, on your own:
     * 1Gbps (de-facto)
     * 10Gbps (on high-end servers)
 * Characteristics of ethernet networks
-    * Each particpant has a MAC address - 6 byte address, hard-wired into their device.
+    * Each particpant has a MAC address - 6 byte address, hard-wired into their
+      device.
         * https://en.wikipedia.org/wiki/MAC_address
     * It is a broadcast network.
 
@@ -167,9 +170,10 @@ A ethernet network on paper:
   to any destination (except, of course, those destinations that are directly
   connected to the sending host). All that IP routing provides is the IP
   address of the nexthop router to which the datagram is sent. It is assumed
-  that the next-hop router is really "closer" to the destination than the
-  sending host is, and that the next-hop router is directly connected to the
-  sending host.
+  that
+    * the next-hop router is really "closer" to the destination than the
+      sending host is, and that
+    * the next-hop router is directly connected to the sending host.
 
 * Route-lookup:
     * Longest prefix match, and send to that next-hop
@@ -230,6 +234,8 @@ A ethernet network on paper:
     * Virtual
 * L3 only interfaces
     * Point-to-point links
+* Loop back interface (true loopback)
+    * Not to be confused with a loopback interface in cisco routers
 * Commands.
     * old/deprecated - `ifconfig`, `route -n`
     * new - `ip link show`, `ip addr show`
@@ -341,6 +347,10 @@ Time to get into action
 * rules are done via - src-ip, src-ifc, pkt-marks (These are stamped using iptables) or just all
 * rules have a priority order
 * local table is special
+    * Always at priority 0
+    * Has routes to all local ips.
+        * NEVER mess with this table.
+        * Or we will stop getting pkts.
 
 # iptables
 
@@ -364,6 +374,7 @@ Time to get into action
     * L2/L3 devices respectively
     * The other end of these interfaces is user-space.
         * One process owns these devices and gets pkts to itself.
+* dummy interface
 
 # ssh
 
