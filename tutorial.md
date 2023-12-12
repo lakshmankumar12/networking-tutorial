@@ -142,6 +142,23 @@ A ethernet network on paper:
   * Network part/Host part
   * Netmask, all host address, broad-cast address
 
+# ICMP
+
+* We will not spend much time here - just go over the most popular types
+* ICMP itself is a protocol on top of IP - is a companion protocol to help IP
+  working. (Not really a transport protocol)
+* https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml
+* Popular ones:
+    * Type 8 / Type 0 - Echo Request / Reply
+    * Type 3 - Destination Unreachable
+        * Code 0 - Network Unreachable
+        * Code 1 - Host Unreachable
+        * Code 3 - Port Unreachable
+        * Code 4 - Fragmentation Needed
+    * Type 11 - Time exceeded
+        * Code 0 - TTL exceeded
+        * Code 1 - Frag Resassembly time exceeded
+
 # ARP
 
 * Glues the IP layer and Ethernet layer together.
@@ -182,29 +199,23 @@ A ethernet network on paper:
 * No route:
     * Send a ICMP(host-unreachable/network-unreachable) back to the host
 
-# ICMP
+* Static routes
+    * Explicitly configured
+    * Okay for small network, but a pain for big networks
 
-* We will not spend much time here - just go over the most popular types
-* ICMP itself is a protocol on top of IP - is a companion protocol to help IP
-  working. (Not really a transport protocol)
-* https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml
-* Popular ones:
-    * Type 8 / Type 0 - Echo Request / Reply
-    * Type 3 - Destination Unreachable
-        * Code 0 - Network Unreachable
-        * Code 1 - Host Unreachable
-        * Code 3 - Port Unreachable
-        * Code 4 - Fragmentation Needed
-    * Type 11 - Time exceeded
-        * Code 0 - TTL exceeded
-        * Code 1 - Frag Resassembly time exceeded
+* Dynamic routes
+    * Local broadcast routes - auto-added when IP is added.
+    * Routing protocols
+        * RIP
+        * OSPF
+        * BGP (very popular)
 
 # Ping and Traceroute
 
-* Ping - simple echo-request and reply!
+* Ping - simple ICMP echo-request and reply!
 
 * Traceroute
-    * Incrementally set TTL to from 1 to 64 and capture the TTL-Exceeded replies and build the route.
+    * Incrementally set TTL from 1 to 64 and capture the TTL-Exceeded replies and build the route.
 
 # Host, Switch, Routers
 
@@ -213,7 +224,7 @@ A ethernet network on paper:
     * Has atleast one interface that connects with the rest of the network.
     * Each interface has atleast one IP and a mac.
     * Usually plain hosts don't forward packets across interfaces.
-    * Impleents the application
+    * Implement applications
 
 * Switch
     * L2 device. Has no IP for itself or mac for itself.
@@ -237,7 +248,7 @@ A ethernet network on paper:
 * Loop back interface (true loopback)
     * Not to be confused with a loopback interface in cisco routers
 * Commands.
-    * old/deprecated - `ifconfig`, `route -n`
+    * old/deprecated - `ifconfig`, `route -n`, `netstat -nr`
     * new - `ip link show`, `ip addr show`
     * routes - `ip route show`
 
@@ -255,6 +266,7 @@ A ethernet network on paper:
 # DHCP
 
 * Helps a new machine to get a IP from the network
+* A DHCP server runs on the same L2 broadcast domain.
 * The other options is static - where a machine is manually assigned a fixed ip
 * DHCP is more or less the defato
 * Remember DORA - Discover, Offer, Request, Ack
@@ -266,7 +278,8 @@ A ethernet network on paper:
 * Makes the internet human-friendly
 * It is not possible to remember IPs of all hosts. Instead it is easy to remember "google.com"
 * There are DNS servers that help us resolve the name to the IP.
-* Each local network has a local DNS-resolver, that caches results and reaches out to the public DNS-resolver when its needs to.
+* Each local network has a local DNS-resolver, that caches results and reaches
+  out to the public DNS-resolver when its needs to.
 * Popular commands - `dig name`, `dig @server name`
 * `/etc/resolv.conf` in linux typically contains the dns-resolver to use.
 

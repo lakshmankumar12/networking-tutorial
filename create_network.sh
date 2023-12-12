@@ -31,6 +31,11 @@ if [ ! -f $VTUNPAIR ] ; then
     exit 1
 fi
 
+CREATE="yes"
+if [ "x$1" == "x-k" ] ; then
+    CREATE="no"
+fi
+
 create_networks() {
     docker network create north      --driver=bridge --subnet=${NRTH}.0/24    --gateway ${NRTH}.100
     docker network create south      --driver=bridge --subnet=${STH}.0/24     --gateway ${STH}.100
@@ -188,4 +193,9 @@ destroyall() {
 sudo true
 echo "Clearing up previous setup"
 destroyall
-fireup
+echo "Cleared"
+if [ "x$CREATE" == "xyes" ] ; then
+    echo "Creating setup"
+    fireup
+    echo "Created"
+fi

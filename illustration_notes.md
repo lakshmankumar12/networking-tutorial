@@ -4,6 +4,7 @@
 * Install ubuntu
 * [Install docker](https://docs.docker.com/engine/install/ubuntu/)
 * Install wireshark - `sudo apt install wireshark`
+* Add `login_container` to your bashrc
 
 
 # Ethernet
@@ -34,6 +35,8 @@ other naming schemes in other newer linux machines
 
 * Notice the `lo` interface. We will come to that later.
 
+* login to swhost1. See that its not BROADCAST, but rather POINTTOPOINT.
+
 # IP
 
 * Again, go to edgertr and do `ip address show`
@@ -58,5 +61,112 @@ other naming schemes in other newer linux machines
 * tcpdump on eth1
 * get comfortable with both terminal and wireshark
     * sometimes just terminal is super fast
-    * remember the `-n` argument.
+    * remember the `-n` argument. Otherwise it may get stuck or be way too slow
     * remember display filters and capture filters
+* type `ip neigh show` on edge-router/nhost1 before and after the ping.
+
+* Note that ARP is only for ethernet interfaces. Go to swhost1 and see the NOARP
+
+# Routing
+
+* Understand route table in
+    * edgertr
+        * see 4 routes
+            * 2 local routes added by kernel
+            * 1 explicit route
+            * 1 default route
+    * nhost1
+        * 3 routes
+            * 1 local route
+            * 1 explicit route
+            * 1 default route
+    * swhost1
+        * only one route!
+        * Observe that the absence of a via/gateway on this route
+          as this is a point to point link.
+        * for broadcast links the route should have a via and
+          for p2p links the route has a device.
+        * The device name(for broadcast) and src-ip are optional but
+          is a good practice to give.
+
+* Lets understand how a packet will flow from nhost1 to swhost1
+    * nhost1 has a route to the `192.168.160.0/22` network. Note
+      the `/22`. This includes all of `192.168.160.0/24` to
+      `192.168.163.0/24` - all of northsouth, south and southwest.
+    * Any of those packets are sent to nrtr.
+    * nrtr then sends to srtr with a `192.168.162.0/23` route
+        * this route is a l3-tun route - based on device
+    * srtr calls a `192.168.163.0/24` route to shost1
+    * for shost there is a direct route to its peer.
+
+* Observe how the routing principles are at play. Each party only
+  knows to a next-hop that is hopefully more aware of the destination.
+
+* Try adding a next-hop that is not directly connected.
+    nrtr: `ip route replace 192.168.160.0/22 via 192.168.160.1 dev eth0 src 192.168.158.3`
+
+# Traceroute
+
+* Traceroute swhost from nhost1
+
+* Ping swhost from nhost. See what's happening
+
+# Switch
+
+* Picture of a switch
+
+# Interfaces in linux
+
+* List all interfaces in every container.
+
+# vlans
+
+* Simple vlans at the switch only.
+* Vlans in which multiple hosts participate
+* linux vlans.
+
+# dhcp
+
+* Fire up a dhcpd server at nrtr
+```sh
+cat <<EOF | tee /etc/dhcp/dhcpd.conf > /dev/null
+default-lease-time 600;
+max-lease-time 7200;
+authoritative;
+
+subnet 192.168.159.0 netmask 255.255.255.0 {
+    range 192.168.159.100 192.168.159.200;
+    option routers 192.168.159.1;
+    option domain-name-servers 8.8.8.8;
+}
+EOF
+touch /var/lib/dhcp/dhcpd.leases
+mkdir /run/dhcp-server
+
+#serve
+dhcpd -f -4 -pf /run/dhcp-server/dhcpd.pid -cf /etc/dhcp/dhcpd.conf eth0
+```
+
+* Run a client at nhost1 and capture packets.
+
+
+# dns
+
+* setup a dns server
+
+```sh
+
+cat <<EOF | tee /tmp/dnsmasq.conf > /dev/null
+local-ttl=
+interface=eth1
+no-dhcp-interface=eth1
+EOF
+
+dnsmasq -k --conf-file=/tmp/dnsmasq.conf
+```
+* now ping a dnsname from nhost1
+* dig against any server.
+
+# tcp & udp
+
+* `nc` -- very nifty tool
