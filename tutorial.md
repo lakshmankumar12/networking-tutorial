@@ -119,6 +119,7 @@ A ethernet network on paper:
     * src, dst, protocol
 * Protocol numbers - https://www.iana.org/assignments/ieee-802-numbers/ieee-802-numbers.xhtml
     * Popular - IPv4, IPv6, ARP, PTP, 802.1Q(vlan)
+* [OUI assignments](https://standards-oui.ieee.org/oui/oui.txt)
 
 # IP
 
@@ -263,6 +264,34 @@ A ethernet network on paper:
 * Only the L3 layer can forward pkts across vlans (with a TTL decrement)
 * On a linux host, we just create tagged interfaces on top of the base interface.
 
+# TCP, UDP
+
+* The transport protocols
+* TCP - Connection-oriented, stream-based, reliable
+* UDP - Connection-less,     datagram-based, unreliable
+* https://en.wikipedia.org/wiki/User_Datagram_Protocol
+* Connection
+    * Each pkt is associated with a connection / independant
+* Stream/datagram based
+    * Is the upper-layer at receiver notified of reads in exact same way as it was done at sender
+* reliable/unreliable
+    * Acks/Retransmissions
+
+* Port-numbers - helps to multiplex many applications on the same host to avail the server
+* the (Src-IP, Src-Port, Dst-IP, Dst-Port) Uniquely identifies a TCP/UDP connection.
+    * Even if any one changes, the connection is different.
+* Servers listen
+* Clients connect
+* Servier listen at a well-known port
+    * In linux ports 0-1024 are priviledged ports
+* Clients typically use a ephemeral port.
+
+* [TCP state diagram](https://en.wikipedia.org/wiki/File:Tcp_state_diagram.png)
+
+* In linux, all of TCP/UDP/SCTP are implemented at kernel space.
+
+* SCTP - relatively newer transport protocol.
+
 # DHCP
 
 * Helps a new machine to get a IP from the network
@@ -278,32 +307,13 @@ A ethernet network on paper:
 * Makes the internet human-friendly
 * It is not possible to remember IPs of all hosts. Instead it is easy to remember "google.com"
 * There are DNS servers that help us resolve the name to the IP.
+* Local dns resolvers
+* Run over udp -- port 53.
 * Each local network has a local DNS-resolver, that caches results and reaches
   out to the public DNS-resolver when its needs to.
 * Popular commands - `dig name`, `dig @server name`
 * `/etc/resolv.conf` in linux typically contains the dns-resolver to use.
 
-# TCP, UDP
-
-* The transport protocols
-* TCP - Connection-oriented, stream-based, reliable
-* UDP - Connection-less,     datagram-based, unreliable
-* Connection
-    * Each pkt is associated with a connection / independant
-* Stream/datagram based
-    * Is the upper-layer at receiver notified of reads in exact same way as it was done at sender
-* reliable/unreliable
-    * Acks/Retransmissions
-
-* Port-numbers - helps to multiplex many applications on the same host to avail the server
-* the (Src-IP, Src-Port, Dst-IP, Dst-Port) Uniquely identifies a TCP/UDP connection.
-    * Even if any one changes, the connection is different.
-* Servers listen
-* Clients connect
-* Servier listen at a well-known port
-* Clients typically use a ephemeral port.
-
-* SCTP - relatively newer transport protocol.
 
 # OS
 

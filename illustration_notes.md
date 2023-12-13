@@ -125,6 +125,46 @@ other naming schemes in other newer linux machines
 * Vlans in which multiple hosts participate
 * linux vlans.
 
+# tcp & udp
+
+* udp header first
+* `nc` -- very nifty tool
+* run a udp server and a udp client. Capture pkts in tcpdump
+* Notice the 5 tuple
+* start a echo udp server. start multiple udp clients from different hosts
+* Notice the same server can have multiple parallel udp clients
+* lsof to study the output of the process.
+* `/proc/net/udp`
+* tcp
+* explicit listen socket
+* connected sockets - `/proc/net/tcp`
+* udp to non-existent port -- icmp port unreachable
+
+* tcp -- observe a simple connection
+    * syn/syn-ack/ack
+    * seq number moving in either direction
+    * fin-ack
+* Look at the state diagram
+    * active-close/passive-close
+    * Half-close
+    * msl wait - drain the connection pkts
+    * simultaneous close
+    * rare - simultaneous open
+* mss -- maximum segment size
+* tcp to non-existent port.. rst
+* abort a connection in between
+* tcp backlog
+
+* Retransmission
+    * at srtr
+        * `iptables -t mangle -A POSTROUTING -d 192.168.162.3/32 -p tcp -m tcp --dport 8000 -j DROP`
+
+* Congestion control at tcp
+
+* speed testing -- use udp and not tcp.
+* interface stats
+* bps script
+
 # dhcp
 
 * Fire up a dhcpd server at nrtr
@@ -149,7 +189,6 @@ dhcpd -f -4 -pf /run/dhcp-server/dhcpd.pid -cf /etc/dhcp/dhcpd.conf eth0
 
 * Run a client at nhost1 and capture packets.
 
-
 # dns
 
 * setup a dns server
@@ -167,6 +206,3 @@ dnsmasq -k --conf-file=/tmp/dnsmasq.conf
 * now ping a dnsname from nhost1
 * dig against any server.
 
-# tcp & udp
-
-* `nc` -- very nifty tool
