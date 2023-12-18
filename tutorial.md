@@ -253,6 +253,11 @@ A ethernet network on paper:
     * new - `ip link show`, `ip addr show`
     * routes - `ip route show`
 
+## advanced
+
+* https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking
+* `ethtool -i <name>`
+
 # Vlans
 
 * Segregration of L2 networks.

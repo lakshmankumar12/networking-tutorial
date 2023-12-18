@@ -101,6 +101,7 @@ other naming schemes in other newer linux machines
 
 * Observe how the routing principles are at play. Each party only
   knows to a next-hop that is hopefully more aware of the destination.
+  * Note that nhost does a apr for its gateway (and not destination)
 
 * Try adding a next-hop that is not directly connected.
     nrtr: `ip route replace 192.168.160.0/22 via 192.168.160.1 dev eth0 src 192.168.158.3`
@@ -164,6 +165,15 @@ other naming schemes in other newer linux machines
 * speed testing -- use udp and not tcp.
 * interface stats
 * bps script
+* iperf
+
+* Commands to rate limit at nrtr
+  ```sh
+  tc qdisc add dev ntun root handle 1: htb default 12
+  tc class add dev ntun parent 1:1 classid 1:12 htb rate 15mbit ceil 15mbit
+  ```
+
+* Behavior of speed testing with tcp and udp
 
 # dhcp
 
