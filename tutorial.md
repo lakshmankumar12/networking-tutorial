@@ -274,7 +274,6 @@ A ethernet network on paper:
 * The transport protocols
 * TCP - Connection-oriented, stream-based, reliable
 * UDP - Connection-less,     datagram-based, unreliable
-* https://en.wikipedia.org/wiki/User_Datagram_Protocol
 * Connection
     * Each pkt is associated with a connection / independant
 * Stream/datagram based
@@ -290,6 +289,8 @@ A ethernet network on paper:
 * Servier listen at a well-known port
     * In linux ports 0-1024 are priviledged ports
 * Clients typically use a ephemeral port.
+
+* https://en.wikipedia.org/wiki/User_Datagram_Protocol
 
 * [TCP state diagram](https://en.wikipedia.org/wiki/File:Tcp_state_diagram.png)
 

@@ -104,7 +104,7 @@ other naming schemes in other newer linux machines
   * Note that nhost does a apr for its gateway (and not destination)
 
 * Try adding a next-hop that is not directly connected.
-    nrtr: `ip route replace 192.168.160.0/22 via 192.168.160.1 dev eth0 src 192.168.158.3`
+    nrtr: `ip route replace 192.168.160.0/22 via 192.168.165.1 dev eth0 src 192.168.158.3`
 
 # Traceroute
 
@@ -125,6 +125,11 @@ other naming schemes in other newer linux machines
 * Simple vlans at the switch only.
 * Vlans in which multiple hosts participate
 * linux vlans.
+    ```sh
+    ip link add link eth0 name eth0.2 type vlan id 2
+    ```
+* Create a vlan on both nhost1 and nhost2 and ping each other over the vlan.
+
 
 # tcp & udp
 
