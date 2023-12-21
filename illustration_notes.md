@@ -159,15 +159,25 @@ other naming schemes in other newer linux machines
 * mss -- maximum segment size
 * tcp to non-existent port.. rst
 * abort a connection in between
+* tcp options.. window size
 * tcp backlog
 
 * Retransmission
     * at srtr
         * `iptables -t mangle -A POSTROUTING -d 192.168.162.3/32 -p tcp -m tcp --dport 8000 -j DROP`
 
+
+* RST in between.
+    ```
+    port=59947
+    iptables -A INPUT -s 192.168.159.3 -p tcp --sport ${port} -j REJECT --reject-with tcp-reset
+    iptables -D INPUT -s 192.168.159.3 -p tcp --sport ${port} -j REJECT --reject-with tcp-reset
+    ```
+
+
+
 * Congestion control at tcp
 
-* speed testing -- use udp and not tcp.
 * interface stats
 * bps script
 * iperf
@@ -177,7 +187,6 @@ other naming schemes in other newer linux machines
   tc qdisc add dev ntun root handle 1: htb default 12
   tc class add dev ntun parent 1:1 classid 1:12 htb rate 15mbit ceil 15mbit
   ```
-
 * Behavior of speed testing with tcp and udp
 
 # dhcp
@@ -203,6 +212,11 @@ dhcpd -f -4 -pf /run/dhcp-server/dhcpd.pid -cf /etc/dhcp/dhcpd.conf eth0
 ```
 
 * Run a client at nhost1 and capture packets.
+
+```sh
+/data/dhtest -m '00:01:02:03:04:05' -i eth0 -h testhost
+```
+
 
 # dns
 
