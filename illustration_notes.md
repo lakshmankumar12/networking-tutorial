@@ -164,7 +164,7 @@ other naming schemes in other newer linux machines
 
 * Retransmission
     * at srtr
-        * `iptables -t mangle -A POSTROUTING -d 192.168.162.3/32 -p tcp -m tcp --dport 8000 -j DROP`
+        * `iptables -t mangle -A POSTROUTING -d 192.168.163.1/32 -p tcp -m tcp --dport 8000 -j DROP`
 
 
 * RST in between.
@@ -234,4 +234,16 @@ dnsmasq -k --conf-file=/tmp/dnsmasq.conf
 ```
 * now ping a dnsname from nhost1
 * dig against any server.
+
+# OS
+
+* strace
+
+# NAT
+
+```
+wget -q -O- 'https://artifactory.gxc.io/repository/keys/public/gxc-3rdparty-apt.key'
+
+```
+
 

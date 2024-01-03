@@ -386,6 +386,9 @@ Time to get into action
 
 * iptables
     * A Swiss-army knife to do almost anything with the pkt
+* tables/chains
+* https://lakshmankumar12.github.io/web/linux-ip-routing/
+* https://en.wikipedia.org/wiki/Iptables#/media/File:Netfilter-packet-flow.svg
 
 # Containers and Namespaces
 
