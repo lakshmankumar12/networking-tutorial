@@ -235,15 +235,16 @@ dnsmasq -k --conf-file=/tmp/dnsmasq.conf
 * now ping a dnsname from nhost1
 * dig against any server.
 
+* remember for a host to meaningfully partiicpate in internet, it needs its IP/netmask/DNS-server-ip
+
 # OS
 
 * strace
 
 # NAT
 
-```
+```sh
 wget -q -O- 'https://artifactory.gxc.io/repository/keys/public/gxc-3rdparty-apt.key'
-
 ```
 
 
