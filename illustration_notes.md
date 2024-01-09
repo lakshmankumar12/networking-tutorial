@@ -248,3 +248,6 @@ wget -q -O- 'https://artifactory.gxc.io/repository/keys/public/gxc-3rdparty-apt.
 ```
 
 
+# bridges
+
+* agw.. brctl show

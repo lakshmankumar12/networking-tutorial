@@ -252,11 +252,8 @@ A ethernet network on paper:
     * old/deprecated - `ifconfig`, `route -n`, `netstat -nr`
     * new - `ip link show`, `ip addr show`
     * routes - `ip route show`
-
-## advanced
-
-* https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking
-* `ethtool -i <name>`
+* L2 level
+    * `ethtool -i <name>`
 
 # Vlans
 
@@ -409,6 +406,10 @@ Time to get into action
         * One process owns these devices and gets pkts to itself.
 * dummy interface
 
+## advanced
+
+* https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking
+
 # ssh
 
 * One of the most underutilized programs
@@ -432,4 +433,5 @@ Time to get into action
 
 # ipsec
 
-
+* site-to-site, client-to-site(vpn/road-warrior), client-to-client
+* strongswan config.
